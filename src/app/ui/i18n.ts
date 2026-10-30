@@ -35,7 +35,7 @@ export const TEXTS: Readonly<Record<Lang, Texts>> = {
     controls: 'Управление',
     controlItems: [
       'Тап или клик по предмету — убрать его из клетки. Ещё один тап — вернуть.',
-      'Долгое нажатие или правый клик — выбрать предмет ответом клетки.',
+      'Долгое нажатие или правый клик — выбрать предмет ответом клетки. Ещё раз на выбранном — снять выбор.',
       'Тап по подсказке — отметить её как использованную.',
       '💡 — показать ошибку или следующий логический шаг. Повторное нажатие применяет шаг.',
       'Ошибки не подсвечиваются, пока не попросите 💡.',
@@ -77,7 +77,7 @@ export const TEXTS: Readonly<Record<Lang, Texts>> = {
     controls: 'Controls',
     controlItems: [
       'Tap or click an item to remove it from the cell. Tap again to bring it back.',
-      'Long press or right click to choose an item as the cell’s answer.',
+      'Long press or right click to choose an item as the cell’s answer. Do it again on the chosen item to undo the choice.',
       'Tap a clue to mark it as used.',
       '💡 shows a mistake or the next logical step. Press again to apply the step.',
       'Mistakes stay hidden until you ask for 💡.',

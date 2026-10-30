@@ -32,6 +32,8 @@ export class Board {
 
   readonly toggle = output<CellAction>();
   readonly select = output<CellAction>();
+  /** Снять выбор с решённой клетки. */
+  readonly unselect = output<CellAction>();
 
   protected readonly rows = computed(() => range(this.puzzle().rows));
   protected readonly cols = computed(() => range(this.puzzle().cols));
@@ -52,7 +54,14 @@ export class Board {
   protected readonly hue = rowHue;
   protected readonly single = singleItem;
 
-  private press: { action: CellAction; x: number; y: number; timer: number; done: boolean } | null = null;
+  private press: {
+    action: CellAction;
+    solved: boolean;
+    x: number;
+    y: number;
+    timer: number;
+    done: boolean;
+  } | null = null;
 
   protected has(mask: number, item: number): boolean {
     return (mask & (1 << item)) !== 0;
@@ -62,10 +71,15 @@ export class Board {
     return this.targets().has((row * this.puzzle().cols + col) * 8 + item);
   }
 
-  protected down(e: PointerEvent, action: CellAction): void {
+  /**
+   * Правый клик или долгое нажатие выбирает кандидата, а на решённой клетке — снимает выбор.
+   * Короткое нажатие убирает или возвращает кандидата; на решённой клетке ничего не делает.
+   */
+  protected down(e: PointerEvent, action: CellAction, solved = false): void {
     this.cancel();
+    const long = () => (solved ? this.unselect : this.select).emit(action);
     if (e.button === 2) {
-      this.select.emit(action);
+      long();
       return;
     }
     if (e.button !== 0) return;
@@ -73,9 +87,9 @@ export class Board {
       if (!this.press) return;
       this.press.done = true;
       navigator.vibrate?.(15);
-      this.select.emit(action);
+      long();
     }, LONG_PRESS_MS);
-    this.press = { action, x: e.clientX, y: e.clientY, timer, done: false };
+    this.press = { action, solved, x: e.clientX, y: e.clientY, timer, done: false };
   }
 
   protected move(e: PointerEvent): void {
@@ -88,7 +102,7 @@ export class Board {
     if (!p) return;
     clearTimeout(p.timer);
     this.press = null;
-    if (!p.done) this.toggle.emit(p.action);
+    if (!p.done && !p.solved) this.toggle.emit(p.action);
   }
 
   protected cancel(): void {

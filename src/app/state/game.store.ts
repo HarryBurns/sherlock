@@ -10,6 +10,7 @@ import {
   errorCells,
   isWon,
   selectCandidate,
+  singleItem,
   toggleCandidate,
 } from '../game/play';
 import { randomSeed } from '../game/rng';
@@ -155,6 +156,35 @@ export class GameStore {
 
   select(row: number, col: number, item: number): void {
     this.move((b, cols) => selectCandidate(b, cols, row, col, item));
+  }
+
+  /**
+   * Снимает выбор с клетки: возвращает ей кандидатов, что были до выбора, а предмет —
+   * в клетки строки, откуда он ушёл. Открытые с начала клетки не снимаются.
+   */
+  unselect(row: number, col: number): void {
+    const g = this.game();
+    if (!g || g.puzzle.givens.some((x) => x.row === row && x.col === col)) return;
+    const cols = g.puzzle.cols;
+    const i = row * cols + col;
+    const bit = g.board[i];
+    if (singleItem(bit) < 0) return;
+    let prev: number[] | null = null;
+    for (let h = g.history.length - 1; h >= 0 && !prev; h--) {
+      const b = decodeBoard(g.history[h]);
+      if (singleItem(b[i]) < 0) prev = b;
+    }
+    if (!prev) return;
+    const before = prev;
+    this.move((board) => {
+      const next = board.slice();
+      next[i] = before[i] | bit;
+      for (let c = 0; c < cols; c++) {
+        const j = row * cols + c;
+        if (c !== col && before[j] & bit) next[j] |= bit;
+      }
+      return next;
+    });
   }
 
   undo(): void {

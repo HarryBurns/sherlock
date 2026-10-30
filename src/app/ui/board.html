@@ -11,7 +11,17 @@
       [class.error]="errors().has(r * p.cols + c)"
     >
       @if (one >= 0) {
-        <app-sym class="big" [set]="p.rowSets[r]" [item]="one" [row]="r" />
+        <app-sym
+          class="big"
+          [set]="p.rowSets[r]"
+          [item]="one"
+          [row]="r"
+          (pointerdown)="down($event, { row: r, col: c, item: one }, true)"
+          (pointermove)="move($event)"
+          (pointerup)="up()"
+          (pointercancel)="cancel()"
+          (pointerleave)="cancel()"
+        />
       } @else {
         <div class="cands">
           @for (i of cols(); track i) {

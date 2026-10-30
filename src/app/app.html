@@ -58,6 +58,7 @@
         [hint]="store.hint()"
         (toggle)="toggle($event)"
         (select)="select($event)"
+        (unselect)="store.unselect($event.row, $event.col)"
       />
     }
 
