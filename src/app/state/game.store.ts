@@ -86,10 +86,8 @@ export class GameStore {
     this.load();
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          if (this.isRunning()) this.paused.set(true);
-          this.save();
-        }
+        // Таймер сам не тикает, пока вкладка скрыта (см. tick), — ставить паузу не нужно.
+        if (document.visibilityState === 'hidden') this.save();
       });
       window.addEventListener('pagehide', () => this.save());
       setInterval(() => this.tick(), 1000);
