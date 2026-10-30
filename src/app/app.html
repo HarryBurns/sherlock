@@ -1,4 +1,116 @@
-<main class="stub">
-  <h1>🕵️</h1>
-  <p class="row">🥒 → 🏠</p>
+@let tx = t();
+@let g = game();
+<header class="bar">
+  <div class="levels" role="radiogroup">
+    @for (l of levels; track l) {
+      <button
+        type="button"
+        role="radio"
+        class="lv"
+        [class.on]="l <= store.level()"
+        [attr.aria-checked]="l === store.level()"
+        [attr.aria-label]="tx.level + ' ' + l"
+        (click)="store.setLevel(l)"
+      >
+        <span [style.height.px]="5 + l * 3"></span>
+      </button>
+    }
+  </div>
+
+  <button type="button" class="timer" [class.paused]="store.paused()" (click)="store.togglePause()" [attr.aria-label]="tx.pause">
+    <app-icon [name]="store.paused() ? 'play' : 'pause'" />
+    <span>{{ time() }}</span>
+  </button>
+
+  <div class="actions">
+    <button type="button" class="icon-btn" [disabled]="!store.canUndo()" (click)="store.undo()" [attr.aria-label]="tx.undo">
+      <app-icon name="undo" />
+    </button>
+    <button type="button" class="icon-btn" [disabled]="!store.canRedo()" (click)="store.redo()" [attr.aria-label]="tx.redo">
+      <app-icon name="redo" />
+    </button>
+    <button
+      type="button"
+      class="icon-btn hint"
+      [class.armed]="store.hint()?.kind === 'step'"
+      [disabled]="!g || g.won"
+      (click)="store.requestHint()"
+      [attr.aria-label]="tx.hint"
+    >
+      💡
+    </button>
+    <button type="button" class="icon-btn" [class.confirm]="confirming()" (click)="newGame()" [attr.aria-label]="tx.newGame">
+      <app-icon [name]="confirming() ? 'check' : 'refresh'" />
+    </button>
+    <button type="button" class="icon-btn" (click)="openRules()" [attr.aria-label]="tx.rules">
+      <app-icon name="help" />
+    </button>
+  </div>
+</header>
+
+<main class="play" [style.--size]="g?.puzzle?.cols ?? 6">
+  <section class="stage">
+    @if (g && !store.loading()) {
+      <app-board
+        [class.hidden]="store.paused()"
+        [puzzle]="g.puzzle"
+        [board]="g.board"
+        [hint]="store.hint()"
+        (toggle)="toggle($event)"
+        (select)="select($event)"
+      />
+    }
+
+    @if (store.loading()) {
+      <div class="overlay">
+        <span class="spinner">🔍</span>
+      </div>
+    } @else if (store.paused()) {
+      <button type="button" class="overlay" (click)="store.togglePause()" [attr.aria-label]="tx.pause">
+        <span class="big-icon"><app-icon name="play" /></span>
+      </button>
+    } @else if (g?.won) {
+      <div class="overlay win">
+        <div class="card">
+          <div class="trophy">{{ store.newBest() ? '🏆' : '🎉' }}</div>
+          <div class="result">
+            <span>⏱ {{ time() }}</span>
+            <span>💡 {{ g!.hints }}</span>
+          </div>
+          <button type="button" class="next" (click)="store.newGame()" [attr.aria-label]="tx.next">
+            <app-icon name="next" />
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (g && !store.loading()) {
+    <aside class="clues" [class.hidden]="store.paused()">
+      <div class="group">
+        @for (c of clueGroups().horizontal; track c.index) {
+          <app-clue
+            [clue]="c.clue"
+            [sets]="g.puzzle.rowSets"
+            [marked]="g.marks[c.index]"
+            [active]="activeClues().has(c.index)"
+            (click)="store.toggleMark(c.index)"
+          />
+        }
+      </div>
+      <div class="group">
+        @for (c of clueGroups().vertical; track c.index) {
+          <app-clue
+            [clue]="c.clue"
+            [sets]="g.puzzle.rowSets"
+            [marked]="g.marks[c.index]"
+            [active]="activeClues().has(c.index)"
+            (click)="store.toggleMark(c.index)"
+          />
+        }
+      </div>
+    </aside>
+  }
 </main>
+
+<app-rules />

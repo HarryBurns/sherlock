@@ -1,0 +1,36 @@
+@let p = puzzle();
+@let b = board();
+@for (r of rows(); track r) {
+  @for (c of cols(); track c) {
+    @let mask = b[r * p.cols + c];
+    @let one = single(mask);
+    <div
+      class="cell"
+      [style.--hue]="hue(r)"
+      [class.solved]="one >= 0"
+      [class.error]="errors().has(r * p.cols + c)"
+    >
+      @if (one >= 0) {
+        <app-sym class="big" [set]="p.rowSets[r]" [item]="one" [row]="r" />
+      } @else {
+        <div class="cands">
+          @for (i of cols(); track i) {
+            <button
+              type="button"
+              class="cand"
+              [class.off]="!has(mask, i)"
+              [class.target]="isTarget(r, c, i)"
+              (pointerdown)="down($event, { row: r, col: c, item: i })"
+              (pointermove)="move($event)"
+              (pointerup)="up()"
+              (pointercancel)="cancel()"
+              (pointerleave)="cancel()"
+            >
+              <app-sym [set]="p.rowSets[r]" [item]="i" [row]="r" />
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+}

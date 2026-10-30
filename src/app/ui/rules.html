@@ -1,0 +1,68 @@
+@let tx = t();
+<dialog #dialog (click)="backdrop($event)">
+  <div class="sheet">
+    <header>
+      <div class="langs">
+        @for (l of langs; track l) {
+          <button type="button" [class.on]="store.settings().lang === l" (click)="store.setLang(l)">{{ l.toUpperCase() }}</button>
+        }
+      </div>
+      <button type="button" class="icon-btn" (click)="close()" [attr.aria-label]="tx.close">
+        <app-icon name="close" />
+      </button>
+    </header>
+
+    <h2>{{ tx.rules }}</h2>
+    <p>{{ tx.goal }}</p>
+
+    <h3>{{ tx.controls }}</h3>
+    <ul>
+      @for (line of tx.controlItems; track $index) {
+        <li>{{ line }}</li>
+      }
+    </ul>
+
+    <h3>{{ tx.clues }}</h3>
+    <p class="note">{{ tx.cluesNote }}</p>
+    <div class="legend">
+      @for (c of demoClues; track c.kind) {
+        <div class="row">
+          <div class="example"><app-clue [clue]="c" [sets]="demoSets" /></div>
+          <span>{{ text(c.kind) }}</span>
+        </div>
+      }
+    </div>
+
+    <h3>{{ tx.settings }}</h3>
+    <label class="toggle">
+      <input type="checkbox" [checked]="store.settings().auto" (change)="store.setAuto($any($event.target).checked)" />
+      <span class="switch"></span>
+      <span>
+        {{ tx.auto }}
+        <small>{{ tx.autoNote }}</small>
+      </span>
+    </label>
+
+    <h3>{{ tx.stats }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>{{ tx.level }}</th>
+          <th>{{ tx.solved }}</th>
+          <th>{{ tx.best }}</th>
+          <th>{{ tx.hints }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of store.stats(); track $index) {
+          <tr>
+            <td>{{ $index + 1 }} <small>{{ levels[$index].cols }}×{{ levels[$index].rows }}</small></td>
+            <td>{{ s.solved }}</td>
+            <td>{{ s.best === null ? '—' : formatTime(s.best) }}</td>
+            <td>{{ s.hints }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</dialog>
